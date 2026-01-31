@@ -70,7 +70,7 @@ class ReportsWindow:
         sales_card.pack(side=tk.LEFT, padx=10, pady=10, fill=tk.BOTH, expand=True)
         
         tk.Label(sales_card, text="💰 Total Sales", font=("Arial", 12), bg="#27ae60", fg="white").pack(pady=5)
-        self.today_sales_label = tk.Label(sales_card, text="₹0.00", font=("Arial", 20, "bold"), bg="#27ae60", fg="white")
+        self.today_sales_label = tk.Label(sales_card, text="RS.0.00", font=("Arial", 20, "bold"), bg="#27ae60", fg="white")
         self.today_sales_label.pack(pady=10)
         
         # Transactions card
@@ -86,7 +86,7 @@ class ReportsWindow:
         cash_card.pack(side=tk.LEFT, padx=10, pady=10, fill=tk.BOTH, expand=True)
         
         tk.Label(cash_card, text="💵 Cash Sales", font=("Arial", 12), bg="#f39c12", fg="white").pack(pady=5)
-        self.today_cash_label = tk.Label(cash_card, text="₹0.00", font=("Arial", 20, "bold"), bg="#f39c12", fg="white")
+        self.today_cash_label = tk.Label(cash_card, text="RS.0.00", font=("Arial", 20, "bold"), bg="#f39c12", fg="white")
         self.today_cash_label.pack(pady=10)
         
         # Credit sales card
@@ -94,7 +94,7 @@ class ReportsWindow:
         credit_card.pack(side=tk.LEFT, padx=10, pady=10, fill=tk.BOTH, expand=True)
         
         tk.Label(credit_card, text="📄 Credit Sales", font=("Arial", 12), bg="#e74c3c", fg="white").pack(pady=5)
-        self.today_credit_label = tk.Label(credit_card, text="₹0.00", font=("Arial", 20, "bold"), bg="#e74c3c", fg="white")
+        self.today_credit_label = tk.Label(credit_card, text="RS.0.00", font=("Arial", 20, "bold"), bg="#e74c3c", fg="white")
         self.today_credit_label.pack(pady=10)
         
         # Recent sales list
@@ -340,10 +340,10 @@ class ReportsWindow:
         summary = db.get_today_summary()
         
         if summary:
-            self.today_sales_label.config(text=f"₹{summary['total_sales']:.2f}")
+            self.today_sales_label.config(text=f"RS.{summary['total_sales']:.2f}")
             self.today_trans_label.config(text=str(summary['total_transactions']))
-            self.today_cash_label.config(text=f"₹{summary['cash_sales']:.2f}")
-            self.today_credit_label.config(text=f"₹{summary['credit_sales']:.2f}")
+            self.today_cash_label.config(text=f"RS.{summary['cash_sales']:.2f}")
+            self.today_credit_label.config(text=f"RS.{summary['credit_sales']:.2f}")
         
         # Load today's sales
         sales = db.fetch_all(
@@ -365,7 +365,7 @@ class ReportsWindow:
                 time_str,
                 sale['cashier'],
                 sale['customer_name'] or 'Walk-in',
-                f"₹{sale['final_amount']:.2f}",
+                f"RS.{sale['final_amount']:.2f}",
                 sale['payment_method'].upper()
             ))
     
@@ -392,9 +392,9 @@ class ReportsWindow:
                 sale['sale_date'],
                 sale['cashier'],
                 sale['customer_name'] or 'Walk-in',
-                f"₹{sale['total_amount']:.2f}",
-                f"₹{sale['discount_amount']:.2f}",
-                f"₹{sale['final_amount']:.2f}",
+                f"RS.{sale['total_amount']:.2f}",
+                f"RS.{sale['discount_amount']:.2f}",
+                f"RS.{sale['final_amount']:.2f}",
                 sale['payment_method'].upper()
             ))
     
@@ -430,9 +430,9 @@ class ReportsWindow:
                 sale['sale_date'],
                 sale['cashier'],
                 sale['customer_name'] or 'Walk-in',
-                f"₹{sale['total_amount']:.2f}",
-                f"₹{sale['discount_amount']:.2f}",
-                f"₹{sale['final_amount']:.2f}",
+                f"RS.{sale['total_amount']:.2f}",
+                f"RS.{sale['discount_amount']:.2f}",
+                f"RS.{sale['final_amount']:.2f}",
                 sale['payment_method'].upper()
             ))
     
@@ -479,20 +479,20 @@ class ReportsWindow:
         for item in items:
             details += f"{item['product_name']}\n"
             if item['sale_type'] == 'by_kg':
-                details += f"  {item['quantity_kg']:.2f}kg x ₹{item['price_per_unit']:.2f}/kg"
+                details += f"  {item['quantity_kg']:.2f}kg x RS.{item['price_per_unit']:.2f}/kg"
             else:
-                details += f"  {item['quantity_bags']} bags x ₹{item['price_per_unit']:.2f}"
-            details += f" = ₹{item['subtotal']:.2f}\n\n"
+                details += f"  {item['quantity_bags']} bags x RS.{item['price_per_unit']:.2f}"
+            details += f" = RS.{item['subtotal']:.2f}\n\n"
         
         details += "-"*50 + "\n"
-        details += f"Subtotal: ₹{sale['total_amount']:.2f}\n"
+        details += f"Subtotal: RS.{sale['total_amount']:.2f}\n"
         
         if sale['discount_amount'] > 0:
-            details += f"Discount: -₹{sale['discount_amount']:.2f}\n"
+            details += f"Discount: -RS.{sale['discount_amount']:.2f}\n"
             if sale['discount_reason']:
                 details += f"Reason: {sale['discount_reason']}\n"
         
-        details += f"\nTOTAL: ₹{sale['final_amount']:.2f}\n"
+        details += f"\nTOTAL: RS.{sale['final_amount']:.2f}\n"
         details += "="*50 + "\n"
         
         details_text.insert('1.0', details)
@@ -533,10 +533,10 @@ class ReportsWindow:
             report += "="*60 + "\n\n"
             
             report += f"Total Transactions: {summary['total_transactions']}\n"
-            report += f"Total Sales: ₹{summary['total_sales']:.2f}\n"
-            report += f"Total Discount: ₹{summary['total_discount']:.2f}\n"
-            report += f"Cash Sales: ₹{summary['cash_sales']:.2f}\n"
-            report += f"Credit Sales: ₹{summary['credit_sales']:.2f}\n\n"
+            report += f"Total Sales: RS.{summary['total_sales']:.2f}\n"
+            report += f"Total Discount: RS.{summary['total_discount']:.2f}\n"
+            report += f"Cash Sales: RS.{summary['cash_sales']:.2f}\n"
+            report += f"Credit Sales: RS.{summary['credit_sales']:.2f}\n\n"
             
             report += "-"*60 + "\n"
             report += "DAILY BREAKDOWN:\n"
@@ -554,7 +554,7 @@ class ReportsWindow:
                 (from_date, to_date))
             
             for day in daily:
-                report += f"{day['date']}: {day['transactions']} transactions, ₹{day['sales']:.2f}\n"
+                report += f"{day['date']}: {day['transactions']} transactions, RS.{day['sales']:.2f}\n"
             
             report += "\n" + "="*60 + "\n"
             
@@ -592,7 +592,7 @@ class ReportsWindow:
                 prod['quality'].title(),
                 f"{prod['total_kg']:.2f}",
                 prod['total_bags'],
-                f"₹{prod['revenue']:.2f}",
+                f"RS.{prod['revenue']:.2f}",
                 prod['transactions']
             ))
     

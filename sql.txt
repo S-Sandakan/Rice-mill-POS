@@ -204,7 +204,7 @@ INSERT OR IGNORE INTO settings (key, value) VALUES
 ('business_address', ''),
 ('business_phone', ''),
 ('receipt_footer', 'Thank you for your business!'),
-('currency_symbol', '₹'),
+('currency_symbol', 'RS.'),
 ('auto_backup_enabled', '1'),
 ('last_backup_date', '');
 

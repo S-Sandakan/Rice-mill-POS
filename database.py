@@ -23,6 +23,13 @@ class Database:
             self.connection.row_factory = sqlite3.Row
         return self.connection
     
+    @staticmethod
+    def row_to_dict(row: sqlite3.Row) -> Dict[str, Any]:
+        """Convert sqlite3.Row to dictionary"""
+        if row is None:
+            return None
+        return dict(row)
+    
     def init_database(self):
         """Initialize database with schema"""
         # Read schema from file or use embedded schema
@@ -152,6 +159,17 @@ class Database:
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         
+        CREATE TABLE IF NOT EXISTS payouts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            payout_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            amount REAL NOT NULL,
+            reason TEXT NOT NULL,
+            authorized_by INTEGER NOT NULL,
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (authorized_by) REFERENCES users(id)
+        );
+        
         -- Insert default admin user
         INSERT OR IGNORE INTO users (username, password_hash, role, full_name) 
         VALUES ('admin', 'admin123', 'admin', 'Administrator');
@@ -228,17 +246,19 @@ class Database:
         return cursor.lastrowid
     
     # Product Methods
-    def get_all_products(self, active_only: bool = True) -> List[sqlite3.Row]:
+    def get_all_products(self, active_only: bool = True) -> List[Dict[str, Any]]:
         """Get all products"""
         query = "SELECT * FROM products"
         if active_only:
             query += " WHERE is_active = 1"
         query += " ORDER BY name"
-        return self.fetch_all(query)
+        rows = self.fetch_all(query)
+        return [self.row_to_dict(row) for row in rows] if rows else []
     
-    def get_product_by_id(self, product_id: int) -> Optional[sqlite3.Row]:
+    def get_product_by_id(self, product_id: int) -> Optional[Dict[str, Any]]:
         """Get product by ID"""
-        return self.fetch_one("SELECT * FROM products WHERE id = ?", (product_id,))
+        row = self.fetch_one("SELECT * FROM products WHERE id = ?", (product_id,))
+        return self.row_to_dict(row)
     
     def add_product(self, product_code: str, name: str, quality: str, 
                    price_per_kg: float, bag_size_kg: float = None, 
@@ -280,11 +300,12 @@ class Database:
         return True
     
     # Stock Methods
-    def get_stock_by_product(self, product_id: int) -> Optional[sqlite3.Row]:
+    def get_stock_by_product(self, product_id: int) -> Optional[Dict[str, Any]]:
         """Get stock for a product"""
-        return self.fetch_one("SELECT * FROM stock WHERE product_id = ?", (product_id,))
+        row = self.fetch_one("SELECT * FROM stock WHERE product_id = ?", (product_id,))
+        return self.row_to_dict(row)
     
-    def get_all_stock_status(self) -> List[sqlite3.Row]:
+    def get_all_stock_status(self) -> List[Dict[str, Any]]:
         """Get stock status for all products"""
         query = """
         SELECT 
@@ -302,7 +323,8 @@ class Database:
         WHERE p.is_active = 1
         ORDER BY p.name
         """
-        return self.fetch_all(query)
+        rows = self.fetch_all(query)
+        return [self.row_to_dict(row) for row in rows] if rows else []
     
     def update_stock(self, product_id: int, quantity_kg_change: float, 
                     quantity_bags_change: int, user_id: int, 
@@ -427,7 +449,7 @@ class Database:
             print(f"Sale creation error: {e}")
             return None
     
-    def get_today_summary(self) -> Optional[sqlite3.Row]:
+    def get_today_summary(self) -> Optional[Dict[str, Any]]:
         """Get today's sales summary"""
         query = """
         SELECT 
@@ -439,9 +461,10 @@ class Database:
         FROM sales
         WHERE DATE(sale_date) = DATE('now') AND is_voided = 0
         """
-        return self.fetch_one(query)
+        row = self.fetch_one(query)
+        return self.row_to_dict(row)
     
-    def get_recent_sales(self, limit: int = 10) -> List[sqlite3.Row]:
+    def get_recent_sales(self, limit: int = 10) -> List[Dict[str, Any]]:
         """Get recent sales"""
         query = """
         SELECT 
@@ -452,7 +475,8 @@ class Database:
         ORDER BY s.sale_date DESC
         LIMIT ?
         """
-        return self.fetch_all(query, (limit,))
+        rows = self.fetch_all(query, (limit,))
+        return [self.row_to_dict(row) for row in rows] if rows else []
     
     def get_sale_details(self, sale_id: int) -> Dict[str, Any]:
         """Get complete sale details with items"""
@@ -476,6 +500,48 @@ class Database:
             'sale': dict(sale),
             'items': [dict(item) for item in items]
         }
+    
+    # Payout Methods
+    def create_payout(self, amount: float, reason: str, user_id: int, notes: str = None) -> int:
+        """Create a payout record"""
+        cursor = self.execute_query(
+            """INSERT INTO payouts (amount, reason, authorized_by, notes) 
+               VALUES (?, ?, ?, ?)""",
+            (amount, reason, user_id, notes)
+        )
+        return cursor.lastrowid
+    
+    def get_all_payouts(self) -> List[Dict[str, Any]]:
+        """Get all payouts"""
+        query = """
+        SELECT p.*, u.full_name as authorized_by_name
+        FROM payouts p
+        JOIN users u ON p.authorized_by = u.id
+        ORDER BY p.payout_date DESC
+        """
+        rows = self.fetch_all(query)
+        return [self.row_to_dict(row) for row in rows] if rows else []
+    
+    def get_payouts_by_date(self, start_date: str, end_date: str) -> List[Dict[str, Any]]:
+        """Get payouts within a date range"""
+        query = """
+        SELECT p.*, u.full_name as authorized_by_name
+        FROM payouts p
+        JOIN users u ON p.authorized_by = u.id
+        WHERE DATE(p.payout_date) BETWEEN ? AND ?
+        ORDER BY p.payout_date DESC
+        """
+        rows = self.fetch_all(query, (start_date, end_date))
+        return [self.row_to_dict(row) for row in rows] if rows else []
+    
+    def get_total_payouts_today(self) -> float:
+        """Get total payouts for today"""
+        result = self.fetch_one(
+            """SELECT COALESCE(SUM(amount), 0) as total_payouts
+               FROM payouts
+               WHERE DATE(payout_date) = DATE('now')"""
+        )
+        return result['total_payouts'] if result else 0
 
 
 # Initialize database instance

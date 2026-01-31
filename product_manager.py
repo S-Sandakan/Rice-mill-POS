@@ -48,9 +48,9 @@ class ProductManagerWindow:
         self.products_tree.heading('code', text='Product Code')
         self.products_tree.heading('name', text='Product Name')
         self.products_tree.heading('quality', text='Quality')
-        self.products_tree.heading('price_kg', text='Price/kg (₹)')
+        self.products_tree.heading('price_kg', text='Price/kg (RS.)')
         self.products_tree.heading('bag_size', text='Bag Size (kg)')
-        self.products_tree.heading('price_bag', text='Price/Bag (₹)')
+        self.products_tree.heading('price_bag', text='Price/Bag (RS.)')
         self.products_tree.heading('active', text='Status')
         
         self.products_tree.column('code', width=120)
@@ -174,7 +174,7 @@ class ProductManagerWindow:
         tk.Radiobutton(quality_frame, text="Economic", variable=quality_var, value="economic").pack(side=tk.LEFT)
         
         # Price per KG
-        tk.Label(form_frame, text="Price per KG (₹):", font=("Arial", 11)).grid(row=3, column=0, sticky="w", pady=8)
+        tk.Label(form_frame, text="Price per KG (RS.):", font=("Arial", 11)).grid(row=3, column=0, sticky="w", pady=8)
         price_kg_entry = tk.Entry(form_frame, font=("Arial", 11), width=25)
         price_kg_entry.grid(row=3, column=1, pady=8, sticky="ew")
         
@@ -185,7 +185,7 @@ class ProductManagerWindow:
         bag_size_entry.insert(0, "25.0")
         
         # Price per Bag
-        tk.Label(form_frame, text="Price per Bag (₹):", font=("Arial", 11)).grid(row=5, column=0, sticky="w", pady=8)
+        tk.Label(form_frame, text="Price per Bag (RS.):", font=("Arial", 11)).grid(row=5, column=0, sticky="w", pady=8)
         price_bag_entry = tk.Entry(form_frame, font=("Arial", 11), width=25)
         price_bag_entry.grid(row=5, column=1, pady=8, sticky="ew")
         
@@ -330,7 +330,7 @@ class ProductManagerWindow:
         tk.Radiobutton(quality_frame, text="Economic", variable=quality_var, value="economic").pack(side=tk.LEFT)
         
         # Price per KG
-        tk.Label(form_frame, text="Price per KG (₹):", font=("Arial", 11)).grid(row=3, column=0, sticky="w", pady=8)
+        tk.Label(form_frame, text="Price per KG (RS.):", font=("Arial", 11)).grid(row=3, column=0, sticky="w", pady=8)
         price_kg_entry = tk.Entry(form_frame, font=("Arial", 11), width=25)
         price_kg_entry.grid(row=3, column=1, pady=8, sticky="ew")
         price_kg_entry.insert(0, str(product['price_per_kg']))
@@ -343,7 +343,7 @@ class ProductManagerWindow:
             bag_size_entry.insert(0, str(product['bag_size_kg']))
         
         # Price per Bag
-        tk.Label(form_frame, text="Price per Bag (₹):", font=("Arial", 11)).grid(row=5, column=0, sticky="w", pady=8)
+        tk.Label(form_frame, text="Price per Bag (RS.):", font=("Arial", 11)).grid(row=5, column=0, sticky="w", pady=8)
         price_bag_entry = tk.Entry(form_frame, font=("Arial", 11), width=25)
         price_bag_entry.grid(row=5, column=1, pady=8, sticky="ew")
         if product['price_per_bag']:
